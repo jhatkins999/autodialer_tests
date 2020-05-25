@@ -9,12 +9,13 @@ client = Client(account_sid, auth_token)
 rodda = '+19176134279'
 jacob = '+16514922091'
 ny_num = '+19175400288'
-for i in range(5):
+for num in [rodda, jacob]:
     message = client.messages.create(
-                     body="text number %s" %i,
+                     body="This is a text to %s" %num,
                      from_= ny_num,
-                     to=jacob
+                     to=num
                  )
+    print(message.sid)
 
 # call = client.calls.create(
 #                         twiml='<Response><Say>Ahoy, World!</Say></Response>',
@@ -23,4 +24,3 @@ for i in range(5):
 #                     )
 
 # print(call.sid)
-# print(message.sid)
