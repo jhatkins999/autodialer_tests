@@ -20,44 +20,45 @@ class AutoTexter(object):
         for i in range(len(data['voters'])):
             contacts.append(
                 TextContact(data['date'][i], text, number, data['voters'][i].number, data['voters'][i],
-                            self.user.foreign_key, mass)
+                            self.user.id, mass)
             )
         return contacts
-
-    def update_user(self):
-        return self.user
 
 
 class User(object):
     def __init__(self, user_id):
-        link = apilink+"/users/users/"  # Add correct API endpoint later
-        jfile = requests.get(link, params={"ID" : user_id}).json
+        link = apilink+"/users/users/"+str(user_id)
+        jfile = requests.get(link, params={"id" : user_id}).json
         fields = json.loads(jfile)
-        self.ID = fields["ID"]
-        assert(self.ID == user_id)
-        self.name = fields["name"]
-        self.email = fields["email"]
-        self.permissions = fields["permissions"]
+        self.id = user_id
+        self.url = fields['url']
+        self.username = fields['username']
+        self.first_name = fields['first_name']
+        self.last_name = fields['last_name']
+        self.email = fields['email']
+        self.groups = fields['groups']
+        self.is_superuser = fields['is_superuser']
+        self.is_staff = fields['is_staff']
 
 
 class Voter(object):
-    def __init__(self, name):
-        link = apilink+"/voters/voters"  # Add correct API endpoint later
-        jfile = requests.get(link, params={"name" : name})
+    def __init__(self, voter_id):
+        link = apilink+"/campaigns/voters/"+str(voter_id)
+        jfile = requests.get(link, params={"id" : voter_id})
         fields = json.loads(jfile)
-        self.name = fields['name']
-        assert(self.name == name)
-        self.number = fields['PhoneNumber']
-        self.campaignKey = fields["ForeignKey"]
+        self.id = voter_id
+        self.name = fields["name"]
+        self.number = fields['phone_number']
+        self.campaignKey = fields["campaign"]
 
 
 class Campaign(object):
-    def __init__(self, name):
-        link = apilink + "/campaigns"  # Add correct API endpoint later
-        jfile = requests.get(link, params={"name": name})
+    def __init__(self, id):
+        link = apilink + "/campaigns/campaigns/"+str(id)
+        jfile = requests.get(link, params={"id": id})
         fields = json.loads(jfile)
+        self.id = id
         self.name = fields['name']
-        assert(self.name == name)
 
 
 class TextContact(object):
@@ -72,17 +73,23 @@ class TextContact(object):
 
     def output_json(self):
         data = {
-            'timestamp' : self.timestamp,
-            'body'      : self.body,
-            'sender'    : self.sender,
-            'receiver'  : self.receiver,
-            'voter'     : self.voter,
-            'user_key'  : self.user_key,
-            'mass'      : self.mass
+            'timestamp_sms' : self.timestamp,
+            'body'          : self.body,
+            'sender'        : self.sender,
+            'receiver'      : self.receiver,
+            'voter'         : self.voter.name,
+            'user'          : self.user_key,
+            'mass'          : self.mass
         }
-        return json.dump(data)
+        json.dump(data, "temp.txt")
+        return json.load('temp.txt')
 
     def update_API(self):
+        link = apilink+'/autodialer/sms_contacts/'
+        jfile = self.output_json()
+        r = requests.post(ur=link, data=jfile)
+        return r
+
 
 
 
