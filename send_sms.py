@@ -3,7 +3,7 @@ import time
 
 # Your Account Sid and Auth Token from twilio.com/console
 # DANGER! This is insecure. See http://twil.io/secure
-# Make sure to add security
+# Make sure to add security // I assume these will require an API call and be given based on the user permissions
 account_sid = 'ACb3cc029d14a5c2dccfaa71b9036309bc'
 auth_token = '57f5a6b74554f21b815ca61b597a6fbf'
 client = Client(account_sid, auth_token)
