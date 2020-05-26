@@ -2,6 +2,7 @@ from send_sms import *
 import json
 import requests
 import datetime
+from recieve_sms import *
 
 apilink = 'localhost:8000'
 
@@ -23,6 +24,11 @@ class AutoTexter(object):
                             self.user.id, mass)
             )
         return contacts
+
+    def message_reply(self, voter, user, text, number): # Find out methods related to messaging response
+        sms_reply(text)
+        return TextContact(datetime.datetime, text, number, voter.number, voter,
+                            self.user_id, False)
 
 
 class User(object):
