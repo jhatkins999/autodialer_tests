@@ -4,12 +4,11 @@ import time
 import sys
 
 
-# Probability k > 1 = 1 - binom.cdf(
+# Probability k > 1 = 1 - binom.cdf(...)
 # Constrained optimization problem
-# Pick the greatest n such that p(k > 1) < alpha
+# Pick the greatest n such that p(k > 1) < alpha -- super easy because binom.cdf is monotonically increasing
 # p = P(a|t) = probability an individual answers given the time
 # p(a|t) = limit the search space to the time specified, count answers in space / count total in space
-# If you want to add more variables you can do so easily but the space will become too small
 
 def valve(p, alpha, max_phones):
     """Valve to determine the number of devices that should be calling numbers"""
