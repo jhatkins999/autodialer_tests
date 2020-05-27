@@ -146,3 +146,9 @@ div#controls {
       text-indent: -1.25em;
       width: 90%;
     }
+
+    div#form div#upload-button
+    {
+    color : #686865;
+    width : 50%;
+    }
