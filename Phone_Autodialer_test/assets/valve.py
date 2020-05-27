@@ -1,7 +1,8 @@
 from scipy.stats import binom
-import pandas as pd
 import time
 import sys
+import os
+import csv
 
 
 # Probability k > 1 = 1 - binom.cdf(...)
@@ -21,21 +22,31 @@ def valve(p, alpha, max_phones):
 
 
 def csv_to_dict(filepath):
-    df = pd.read_csv(filepath, skiprows=1)
-    df = df.T
-    phone_lookup = df.to_dict()  # Creates a dictionary where the key is the phone numbers
+    file = open(filepath)
+    reader = csv.reader(file)
+    phone_lookup = {}
+    for row in reader:
+        phone_lookup[row[0]] = row[1:]
     return phone_lookup
 
 
 def output_data(filepath):
     period = time.localtime().tm_hour // 4  # Convert the hours to one of six time periods
-    df = pd.read_csv('parameters.csv')
-    param = df.to_dict()
-    prob = param['contact_'+str(period)] / param['total'+str(period)]
-    n = valve(prob, param['alpha'], param['max_phones'])
+    os.chdir('C:/Users/ja383/PycharmProjects/autodialer/Phone_Autodialer_test/assets')
+    file = open('csvfiles/parameters.csv', 'r')
+    paramreader = csv.reader(file)
+    param = {}
+    for row in paramreader:
+        param[row[0]] = row[1]
+
+    prob = float(param['contact'+str(period)] )/ float(param['total'+str(period)])
+    n = valve(prob, float(param['alpha']), int(param['max_phones']))
     phone_table = csv_to_dict(filepath)
 
-    return n, list(phone_table.keys())
+    print(n)
+    for num in list(phone_table.keys()):
+        print(num)
+    sys.stdout.flush()
 
 
 if __name__ == "__main__":
