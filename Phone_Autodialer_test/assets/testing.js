@@ -5,6 +5,8 @@ $(function() {
   var inputVolumeBar = document.getElementById("input-volume");
   var volumeIndicators = document.getElementById("volume-indicators");
 
+  var num = "651-492-2091";
+
   var device;
 
   log("Requesting Access Token...");
@@ -84,27 +86,20 @@ $(function() {
     });
 ///////////////////////////////////////////////////////////////
   // Bind button to make call
-  document.getElementById("button-call").onclick = function() {
-    // get the phone number to connect the call to
-    var params = {
-      To: document.getElementById("phone-number").value
-    };
-
-    console.log("Calling " + params.To + "...");
-    if (device) {
-      var outgoingConnection = device.connect(params);
-      outgoingConnection.on("ringing", function() {
-        log("Ringing...");
-      });
+  document.getElementById("button-call").onclick = function()
+  {
+    for(i = 0; i < 2; i++)
+    {
+        call(num, device);
+        log("call number "+i);
+        console.log(i);
+        hangup(device);
     }
   };
 
   // Bind button to hangup call
   document.getElementById("button-hangup").onclick = function() {
-    log("Hanging up...");
-    if (device) {
-      device.disconnectAll();
-    }
+    hangup(device);
   };
 
   document.getElementById("get-devices").onclick = function() {
@@ -205,4 +200,30 @@ $(function() {
     var div = document.getElementById("client-name");
     div.innerHTML = "Your client name: <strong>" + clientName + "</strong>";
   }
+
+  //New Functions: Call and Hangup
+  function call(number, device)
+  {
+    // get the phone number to connect the call to
+    var params = {
+      To: number
+    };
+
+    console.log("Calling " + number + "...");
+    if (device) {
+      var outgoingConnection = device.connect(params);
+      outgoingConnection.on("ringing", function() {
+        log("Ringing...");
+      });
+    }
+  }
+
+  function hangup(device)
+  {
+    log("Hanging up...");
+    if (device) {
+      device.disconnectAll();
+    }
+  }
+
 });
