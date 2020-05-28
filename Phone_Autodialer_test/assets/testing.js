@@ -5,7 +5,7 @@ $(function() {
   var inputVolumeBar = document.getElementById("input-volume");
   var volumeIndicators = document.getElementById("volume-indicators");
 
-  var num = "651-492-2091";
+  var numbers = ['651-492-2091', '917-613-4279'];
 
   var device;
 
@@ -88,10 +88,11 @@ $(function() {
   // Bind button to make call
   document.getElementById("button-call").onclick = function()
   {
+
     for(i = 0; i < 2; i++)
     {
-        call(num, device);
-        log("call number "+i);
+        call(numbers[i], device);
+        log("call number : "+numbers[i]);
         console.log(i);
         hangup(device);
     }
