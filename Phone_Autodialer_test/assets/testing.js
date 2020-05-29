@@ -1,92 +1,82 @@
 $(function() {
 
+  var numbers = ['651-492-2091', '917-613-4279'];
+  var n = 1;
+
   var speakerDevices = document.getElementById("speaker-devices");
   var ringtoneDevices = document.getElementById("ringtone-devices");
   var outputVolumeBar = document.getElementById("output-volume");
   var inputVolumeBar = document.getElementById("input-volume");
   var volumeIndicators = document.getElementById("volume-indicators");
 
-  var numbers = ['651-492-2091', '917-613-4279'];
-
   var device;
-  n = 1;
+  var devices = [device];
+  for(i = 0; i < n; i ++)
+  {
+      log("Requesting Access Token...");
+      console.log("requesting access token");
+      // Using a relative link to access the Voice Token function
+      $.getJSON("./voice-token")
+        .then(function(data) {
+          log("Got a token.");
+          console.log("Token: " + data.token);
 
-  log("Requesting Access Token...");
-  // Using a relative link to access the Voice Token function
-  $.getJSON("./voice-token")
-    .then(function(data) {
-      log("Got a token.");
-      console.log("Token: " + data.token);
+          // Setup Twilio.Device
+          device = new Twilio.Device(data.token, {
+            codecPreferences: ["opus", "pcmu"],
+            fakeLocalDTMF: true,
+            enableRingingState: true
+          });
 
-      // Setup Twilio.Device
-      device = new Twilio.Device(data.token, {
-        // Set Opus as our preferred codec. Opus generally performs better, requiring less bandwidth and
-        // providing better audio quality in restrained network conditions. Opus will be default in 2.0.
-        codecPreferences: ["opus", "pcmu"],
-        // Use fake DTMF tones client-side. Real tones are still sent to the other end of the call,
-        // but the client-side DTMF tones are fake. This prevents the local mic capturing the DTMF tone
-        // a second time and sending the tone twice. This will be default in 2.0.
-        fakeLocalDTMF: true,
-        // Use `enableRingingState` to enable the device to emit the `ringing`
-        // state. The TwiML backend also needs to have the attribute
-        // `answerOnBridge` also set to true in the `Dial` verb. This option
-        // changes the behavior of the SDK to consider a call `ringing` starting
-        // from the connection to the TwiML backend to when the recipient of
-        // the `Dial` verb answers.
-        answerOnBridge: true,
-        enableRingingState: true
-      });
+          device.on("ready", function(device) {
+            log("Twilio.Device Ready!");
+            document.getElementById("call-controls").style.display = "block";
+          });
 
-      device.on("ready", function(device) {
-        log("Twilio.Device Ready!");
-        document.getElementById("call-controls").style.display = "block";
-      });
+          device.on("error", function(error) {
+            log("Twilio.Device Error: " + error.message);
+          });
 
-      device.on("error", function(error) {
-        log("Twilio.Device Error: " + error.message);
-      });
+          device.on("connect", function(conn) {
+            log("Successfully established call!");
+            document.getElementById("button-call").style.display = "none";
+            document.getElementById("button-hangup").style.display = "inline";
+            volumeIndicators.style.display = "block";
+            bindVolumeIndicators(conn);
+          });
 
-      device.on("connect", function(conn) {
-        log("Successfully established call!");
-        document.getElementById("button-call").style.display = "none";
-        document.getElementById("button-hangup").style.display = "inline";
-        volumeIndicators.style.display = "block";
-        bindVolumeIndicators(conn);
-      });
+          device.on("disconnect", function(conn) {
+            log("Call ended.");
+            document.getElementById("button-call").style.display = "inline";
+            document.getElementById("button-hangup").style.display = "none";
+            volumeIndicators.style.display = "none";
+          });
 
-      device.on("disconnect", function(conn) {
-        log("Call ended.");
-        document.getElementById("button-call").style.display = "inline";
-        document.getElementById("button-hangup").style.display = "none";
-        volumeIndicators.style.display = "none";
-      });
+          device.on("incoming", function(conn) {
+            log("Incoming connection from " + conn.parameters.From);
+            var archEnemyPhoneNumber = "+12093373517";
 
-      device.on("incoming", function(conn) {
-        log("Incoming connection from " + conn.parameters.From);
-        var archEnemyPhoneNumber = "+12093373517";
+            if (conn.parameters.From === archEnemyPhoneNumber) {
+              conn.reject();
+              log("It's your nemesis. Rejected call.");
+            } else {
+              // accept the incoming connection and start two-way audio
+              conn.accept();
+            }
+          });
 
-        if (conn.parameters.From === archEnemyPhoneNumber) {
-          conn.reject();
-          log("It's your nemesis. Rejected call.");
-        } else {
-          // accept the incoming connection and start two-way audio
-          conn.accept();
-        }
-      });
-
-      setClientNameUI(data.identity);
-
-      device.audio.on("deviceChange", updateAllDevices.bind(device));
-
-      // Show audio selection UI if it is supported by the browser.
-      if (device.audio.isOutputSelectionSupported) {
-        document.getElementById("output-selection").style.display = "block";
+          setClientNameUI(data.identity);
+          device.audio.on("deviceChange", updateAllDevices.bind(device));
+          if (device.audio.isOutputSelectionSupported) {
+            document.getElementById("output-selection").style.display = "block";
+          }
+        })
+        .catch(function(err) {
+          console.log(err);
+          log("Could not get a token from server!");
+        });
       }
-    })
-    .catch(function(err) {
-      console.log(err);
-      log("Could not get a token from server!");
-    });
+
 ///////////////////////////////////////////////////////////////
   // Bind button to make call
   document.getElementById("button-call").onclick = function()
@@ -107,9 +97,10 @@ $(function() {
   document.getElementById("get-devices").onclick = function() {
     navigator.mediaDevices
       .getUserMedia({ audio: true })
-      .then(updateAllDevices.bind(device));
+      //.then(updateAllDevices.bind(device));
   };
 
+  /*
   speakerDevices.addEventListener("change", function() {
     var selectedDevices = [].slice
       .call(speakerDevices.children)
@@ -120,7 +111,8 @@ $(function() {
         return node.getAttribute("data-id");
       });
 
-    device.audio.speakerDevices.set(selectedDevices);
+
+    //device.audio.speakerDevices.set(selectedDevices);
   });
 
   ringtoneDevices.addEventListener("change", function() {
@@ -135,6 +127,7 @@ $(function() {
 
     device.audio.ringtoneDevices.set(selectedDevices);
   });
+  */
 
   function bindVolumeIndicators(connection) {
     connection.on("volume", function(inputVolume, outputVolume) {
@@ -158,6 +151,48 @@ $(function() {
       outputVolumeBar.style.width = Math.floor(outputVolume * 300) + "px";
       outputVolumeBar.style.background = outputColor;
     });
+  }
+  function setSoundDevices(device)  {
+
+    var selectedDevices = [].slice
+      .call(speakerDevices.children)
+      .filter(function(node) {
+        return node.selected;
+      })
+      .map(function(node) {
+        return node.getAttribute("data-id");
+      });
+
+    device.audio.speakerDevices.set(selectedDevices);
+
+    var selectedDevices = [].slice
+      .call(ringtoneDevices.children)
+      .filter(function(node) {
+        return node.selected;
+      })
+      .map(function(node) {
+        return node.getAttribute("data-id");
+      });
+
+    device.audio.ringtoneDevices.set(selectedDevices);
+
+    device.audio.availableOutputDevices.forEach(function(device, id) {
+      var isActive = selectedDevices.size === 0 && id === "default";
+      selectedDevices.forEach(function(device) {
+        if (device.deviceId === id) {
+          isActive = true;
+        }
+      });
+
+      var option = document.createElement("option");
+      option.label = device.label;
+      option.setAttribute("data-id", id);
+      if (isActive) {
+        option.setAttribute("selected", "selected");
+        console.log(id+" will be active")
+      }
+
+  });
   }
 
   function updateAllDevices() {
@@ -184,7 +219,8 @@ $(function() {
       option.label = device.label;
       option.setAttribute("data-id", id);
       if (isActive) {
-        option.setAttribute("selected", "selected");
+        //option.setAttribute("selected", "selected");
+        console.log(id+" will be active");
       }
       selectEl.appendChild(option);
     });
@@ -218,15 +254,14 @@ $(function() {
       if(outgoingConnection.status() == 'connecting')
       {
         console.log("Ringing");
-        console.log("Turned audio off");
       }
       outgoingConnection.on("accept", function()
       {
         //for device in devices
-        //device.disconectAll()
+        //device.disconnectAll()
         console.log("Connected babey(:");
-        console.log(device.audio.outgoing());
-        console.log("turned audio back on");
+        setSoundDevices(device);
+        console.log("turned audio on");
       });
     }
     else
