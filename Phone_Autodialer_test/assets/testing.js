@@ -1,4 +1,5 @@
 $(function() {
+
   var speakerDevices = document.getElementById("speaker-devices");
   var ringtoneDevices = document.getElementById("ringtone-devices");
   var outputVolumeBar = document.getElementById("output-volume");
@@ -8,6 +9,7 @@ $(function() {
   var numbers = ['651-492-2091', '917-613-4279'];
 
   var device;
+  n = 1;
 
   log("Requesting Access Token...");
   // Using a relative link to access the Voice Token function
@@ -31,6 +33,7 @@ $(function() {
         // changes the behavior of the SDK to consider a call `ringing` starting
         // from the connection to the TwiML backend to when the recipient of
         // the `Dial` verb answers.
+        answerOnBridge: true,
         enableRingingState: true
       });
 
@@ -89,12 +92,10 @@ $(function() {
   document.getElementById("button-call").onclick = function()
   {
 
-    for(i = 0; i < 2; i++)
+    for(i = 0; i < n; i++)
     {
         call(numbers[i], device);
         log("call number : "+numbers[i]);
-        console.log(i);
-        hangup(device);
     }
   };
 
@@ -213,15 +214,31 @@ $(function() {
     console.log("Calling " + number + "...");
     if (device) {
       var outgoingConnection = device.connect(params);
-      outgoingConnection.on("ringing", function() {
-        log("Ringing...");
+
+      if(outgoingConnection.status() == 'connecting')
+      {
+        console.log("Ringing");
+        console.log("Turned audio off");
+      }
+      outgoingConnection.on("accept", function()
+      {
+        //for device in devices
+        //device.disconectAll()
+        console.log("Connected babey(:");
+        console.log(device.audio.outgoing());
+        console.log("turned audio back on");
       });
     }
+    else
+    {
+        console.log("Device is not recognized");
+    }
+
   }
 
   function hangup(device)
   {
-    log("Hanging up...");
+    console.log("Hanging up...");
     if (device) {
       device.disconnectAll();
     }
