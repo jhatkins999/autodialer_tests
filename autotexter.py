@@ -26,7 +26,7 @@ class AutoTexter(object):
         return contacts
 
     def message_reply(self, voter, user, text, number): # Find out methods related to messaging response
-        sms_reply(text)
+        send_messages([voter], text, number)
         return TextContact(datetime.datetime, text, number, voter.number, voter,
                             self.user_id, False)
 
