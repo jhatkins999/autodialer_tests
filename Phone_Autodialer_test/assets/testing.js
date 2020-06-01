@@ -1,7 +1,7 @@
 $(function() {
 
-  var numbers = ['651-492-2091', '917-613-4279'];
-  var n = 1;
+  var numbers = ['651-492-2091', '917-613-4279']; // FROM API CALL
+  var n = 1; // FROM API CALL
 
   var speakerDevices = document.getElementById("speaker-devices");
   var ringtoneDevices = document.getElementById("ringtone-devices");
@@ -16,7 +16,7 @@ $(function() {
       log("Requesting Access Token...");
       console.log("requesting access token");
       // Using a relative link to access the Voice Token function
-      $.getJSON("./voice-token")
+      $.getJSON("./voice-token") // Each generation of a token is unique, probs store tokens to api to be sure anyways
         .then(function(data) {
           log("Got a token.");
           console.log("Token: " + data.token);
@@ -84,7 +84,7 @@ $(function() {
 
     for(i = 0; i < n; i++)
     {
-        call(numbers[i], device);
+        call(numbers[i], device, speakerDevices, ringtoneDevices);
         log("call number : "+numbers[i]);
     }
   };
@@ -152,7 +152,7 @@ $(function() {
       outputVolumeBar.style.background = outputColor;
     });
   }
-  function setSoundDevices(device)  {
+  function setSoundDevices(device, speakerDevices, ringtoneDevices)  {
 
     var selectedDevices = [].slice
       .call(speakerDevices.children)
@@ -240,7 +240,7 @@ $(function() {
   }
 
   //New Functions: Call and Hangup
-  function call(number, device)
+  function call(number, device, speakerDevices, ringtoneDevices)
   {
     // get the phone number to connect the call to
     var params = {
@@ -260,7 +260,7 @@ $(function() {
         //for device in devices
         //device.disconnectAll()
         console.log("Connected babey(:");
-        setSoundDevices(device);
+        setSoundDevices(device, speakerDevices, ringtoneDevices);
         console.log("turned audio on");
       });
     }
